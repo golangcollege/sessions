@@ -19,7 +19,6 @@ var errMissingCache = errors.New("session: cache not present in request context"
 
 type cache struct {
 	Data      map[string]interface{}
-	Flash     string
 	Expiry    time.Time
 	modified  bool
 	destroyed bool
@@ -170,7 +169,6 @@ func (s *Session) Destroy(r *http.Request) {
 
 	c.mu.Lock()
 	c.Data = nil
-	c.Flash = ""
 	c.Expiry = time.Time{}
 	c.modified = true
 	c.destroyed = true
@@ -237,7 +235,7 @@ func (s *Session) GetBytes(r *http.Request, key string) []byte {
 	return b
 }
 
-// GetTime returns the time.Time value for a given key from the session data. The
+// GetTime returns the time.Time value for a given key from the session cache. The
 // zero value for a time.Time object is returned if the key does not exist or the
 // value could not be type asserted to a time.Time. This can be tested with the
 // time.IsZero() method.
@@ -250,30 +248,74 @@ func (s *Session) GetTime(r *http.Request, key string) time.Time {
 	return t
 }
 
-// PutFlash adds a string flash message to the the session cache. Any
-// existing value for the flash message will be replaced.
-func (s *Session) PutFlash(r *http.Request, val string) {
-	c := getCacheFromRequestContext(r)
-
-	c.mu.Lock()
-	c.Flash = val
-	c.modified = true
-	c.mu.Unlock()
+// PopString returns the string value for a given key and then deletes it from the
+// session cache. The zero value for a string ("") is returned if the key does not
+// exist or the value could not be type asserted to a string.
+func (s *Session) PopString(r *http.Request, key string) string {
+	val := s.Pop(r, key)
+	str, ok := val.(string)
+	if !ok {
+		return ""
+	}
+	return str
 }
 
-// GetFlash removes and returns the current flash message from the session
-// cache. Any further attempts to retrieve the flash message will return the
-// empty string "".
-func (s *Session) GetFlash(r *http.Request) string {
-	c := getCacheFromRequestContext(r)
-
-	c.mu.Lock()
-	val := c.Flash
-	if val != "" {
-		c.Flash = ""
-		c.modified = true
+// PopBool returns the bool value for a given key and then deletes it from the
+// session cache. The zero value for a bool (false) is returned if the key does not
+// exist or the value could not be type asserted to a bool.
+func (s *Session) PopBool(r *http.Request, key string) bool {
+	val := s.Pop(r, key)
+	b, ok := val.(bool)
+	if !ok {
+		return false
 	}
-	c.mu.Unlock()
+	return b
+}
 
-	return val
+// PopInt returns the int value for a given key and then deletes it from the
+// session cache. The zero value for an int (0) is returned if the key does not
+// exist or the value could not be type asserted to an int.
+func (s *Session) PopInt(r *http.Request, key string) int {
+	val := s.Pop(r, key)
+	i, ok := val.(int)
+	if !ok {
+		return 0
+	}
+	return i
+}
+
+// PopFloat returns the float64 value for a given key and then deletes it from the
+// session cache. The zero value for an float64 (0) is returned if the key does not
+// exist or the value could not be type asserted to a float64.
+func (s *Session) PopFloat(r *http.Request, key string) float64 {
+	val := s.Pop(r, key)
+	f, ok := val.(float64)
+	if !ok {
+		return 0
+	}
+	return f
+}
+
+// PopBytes returns the byte slice ([]byte) value for a given key and then deletes
+// it from the from the session cache. The zero value for a slice (nil) is returned
+// if the key does not exist or could not be type asserted to []byte.
+func (s *Session) PopBytes(r *http.Request, key string) []byte {
+	val := s.Pop(r, key)
+	b, ok := val.([]byte)
+	if !ok {
+		return nil
+	}
+	return b
+}
+
+// PopTime returns the time.Time value for a given key and then deletes it from the
+// session cache. The zero value for a time.Time object is returned if the key does
+// not exist or the value could not be type asserted to a time.Time.
+func (s *Session) PopTime(r *http.Request, key string) time.Time {
+	val := s.Pop(r, key)
+	t, ok := val.(time.Time)
+	if !ok {
+		return time.Time{}
+	}
+	return t
 }

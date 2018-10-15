@@ -277,47 +277,32 @@ func TestGetTime(t *testing.T) {
 	}
 }
 
-func TestPutFlash(t *testing.T) {
+func TestPopString(t *testing.T) {
 	r, err := http.NewRequest("GET", "/", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 	c := newCache(time.Hour)
+	c.Data["foo"] = "bar"
 	r = addCacheToRequestContext(r, c)
 
 	s := New([]byte("secret"))
-	s.PutFlash(r, "bar")
-
-	if c.Flash != "bar" {
-		t.Errorf("got %q: expected %q", c.Flash, "bar")
-	}
-
-	if !c.modified {
-		t.Errorf("got %v: expected %v", c.modified, true)
-	}
-}
-
-func TestGetFlash(t *testing.T) {
-	r, err := http.NewRequest("GET", "/", nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	c := newCache(time.Hour)
-	c.Flash = "bar"
-	r = addCacheToRequestContext(r, c)
-
-	s := New([]byte("secret"))
-	str := s.GetFlash(r)
+	str := s.PopString(r, "foo")
 	if str != "bar" {
 		t.Errorf("got %q: expected %q", str, "bar")
 	}
 
-	str = s.GetFlash(r)
-	if str != "" {
-		t.Errorf("got %q: expected %q", str, "")
+	_, ok := c.Data["foo"]
+	if ok {
+		t.Errorf("got %v: expected %v", ok, false)
 	}
 
 	if !c.modified {
 		t.Errorf("got %v: expected %v", c.modified, true)
+	}
+
+	str = s.PopString(r, "bar")
+	if str != "" {
+		t.Errorf("got %q: expected %q", str, "")
 	}
 }

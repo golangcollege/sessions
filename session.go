@@ -83,7 +83,8 @@ type Session struct {
 	Secure bool
 
 	// SameSite controls the value of the 'SameSite' attribute on the session
-	// cookie. By default no SameSite attribute or value are set.
+	// cookie. By default this is set to 'SameSite=Lax'. If you want no SameSite
+	// attribute or value in the session cookie then you should set this to 0.
 	SameSite http.SameSite
 
 	// ErrorHandler allows you to control behaviour when an error is encountered
@@ -121,7 +122,7 @@ func New(key []byte, oldKeys ...[]byte) *Session {
 		Path:         "/",
 		Persist:      true,
 		Secure:       false,
-		SameSite:     0,
+		SameSite:     http.SameSiteLaxMode,
 		ErrorHandler: defaultErrorHandler,
 		keys:         keys,
 	}

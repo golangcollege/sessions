@@ -82,6 +82,10 @@ type Session struct {
 	// requests over HTTPS in production environments.
 	Secure bool
 
+	// SameSite controls the value of the 'SameSite' attribute on the session
+	// cookie. By default no SameSite attribute or value are set.
+	SameSite http.SameSite
+
 	// ErrorHandler allows you to control behaviour when an error is encountered
 	// loading or writing the session cookie. By default the client is sent a
 	// generic "500 Internal Server Error" response and the actual error message
@@ -117,6 +121,7 @@ func New(key []byte, oldKeys ...[]byte) *Session {
 		Path:         "/",
 		Persist:      true,
 		Secure:       false,
+		SameSite:     0,
 		ErrorHandler: defaultErrorHandler,
 		keys:         keys,
 	}
@@ -193,6 +198,7 @@ func (s *Session) save(w http.ResponseWriter, c *cache) error {
 			Domain:   s.Domain,
 			Secure:   s.Secure,
 			HttpOnly: s.HttpOnly,
+			SameSite: s.SameSite,
 			Expires:  time.Unix(1, 0),
 			MaxAge:   -1,
 		})
@@ -211,6 +217,7 @@ func (s *Session) save(w http.ResponseWriter, c *cache) error {
 		Domain:   s.Domain,
 		Secure:   s.Secure,
 		HttpOnly: s.HttpOnly,
+		SameSite: s.SameSite,
 	}
 	if s.Persist {
 		cookie.Expires = time.Unix(c.Expiry.Unix()+1, 0)        // Round up to the nearest second.

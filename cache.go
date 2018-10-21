@@ -104,10 +104,14 @@ func (s *Session) Pop(r *http.Request, key string) interface{} {
 	c := getCacheFromRequestContext(r)
 
 	c.mu.Lock()
-	val := c.Data[key]
+	defer c.mu.Unlock()
+
+	val, exists := c.Data[key]
+	if !exists {
+		return nil
+	}
 	delete(c.Data, key)
 	c.modified = true
-	c.mu.Unlock()
 
 	return val
 }

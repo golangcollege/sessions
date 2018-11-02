@@ -1,6 +1,8 @@
-# Sessions
+# Sessions [![GoDoc](http://img.shields.io/badge/go-documentation-blue.svg?style=flat-square)](https://godoc.org/github.com/golangcollege/sessions) [![Go Report Card](https://goreportcard.com/badge/github.com/golangcollege/sessions?style=flat-square)](https://goreportcard.com/report/github.com/golangcollege/sessions) [![Build Status](http://img.shields.io/travis/golangcollege/sessions.svg?style=flat-square)](https://travis-ci.org/golangcollege/sessions) [![License](http://img.shields.io/badge/license-mit-blue.svg?style=flat-square)](https://raw.githubusercontent.com/golangcollege/sessions/master/LICENSE)
 
-A minimalist and lightweight HTTP session cookie implementation for Go. Session cookies are encrypted and authenticated using nacl/secretbox.
+A minimalist and lightweight HTTP session cookie implementation for Go 1.11+. Session cookies are encrypted and authenticated using nacl/secretbox.
+
+TODO: the amount of information you can store is limited (to 4KB)
 
 ## Example Usage
 
@@ -44,7 +46,7 @@ func getHandler(w http.ResponseWriter, r *http.Request) {
 * [tests] Test cookie options
 * [tests] Improve tests for invalid cookies
 * [tests] Increase test coverage
-* [tests] Use Travis CI
 * [feature] Support multiple named sessions
+* [feature] Support flash messages
 * [feature] Support Flusher interface
 * [feature] Support Hijacker interface

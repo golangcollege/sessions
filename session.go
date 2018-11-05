@@ -1,4 +1,4 @@
-// Package session provides a minimalist and lightweight HTTP session cookie
+// Package sessions provides a minimalist and lightweight HTTP session cookie
 // implementation for Go. Session cookies are encrypted and authenticated using
 // nacl/secretbox.
 //

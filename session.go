@@ -228,6 +228,7 @@ func (s *Session) save(w http.ResponseWriter, c *cache) error {
 	if len(cookie.String()) > 4096 {
 		return errCookieTooLong
 	}
+	w.Header().Add("Vary", "Cookie")
 	http.SetCookie(w, cookie)
 
 	return nil

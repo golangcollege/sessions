@@ -65,7 +65,7 @@ func getCacheFromRequestContext(r *http.Request) *cache {
 	return c
 }
 
-// Put adds a key and corresponding value to the the session cache. Any existing
+// Put adds a key and corresponding value to the session data. Any existing
 // value for the key will be replaced.
 func (s *Session) Put(r *http.Request, key string, val interface{}) {
 	c := getCacheFromRequestContext(r)
@@ -76,13 +76,13 @@ func (s *Session) Put(r *http.Request, key string, val interface{}) {
 	c.mu.Unlock()
 }
 
-// Get returns the value for a given key from the session cache. The return
+// Get returns the value for a given key from the session data. The return
 // value has the type interface{} so will usually need to be type asserted
 // before you can use it. For example:
 //
-//	foo, ok := session.Get("foo").(string)
+//	foo, ok := session.Get(r, "foo").(string)
 //	if !ok {
-//		return errors.New("Type assertion to string failed")
+//		return errors.New("type assertion to string failed")
 //	}
 //
 // Note: Alternatives are the GetString(), GetInt(), GetBytes() and other
@@ -97,7 +97,7 @@ func (s *Session) Get(r *http.Request, key string) interface{} {
 }
 
 // Pop acts like a one-time Get. It returns the value for a given key from the
-// session cache and deletes the key and value from the session cache. The
+// session data and deletes the key and value from the session data. The
 // return value has the type interface{} so will usually need to be type
 // asserted before you can use it.
 func (s *Session) Pop(r *http.Request, key string) interface{} {
@@ -116,7 +116,7 @@ func (s *Session) Pop(r *http.Request, key string) interface{} {
 	return val
 }
 
-// Remove deletes the given key and corresponding value from the session cache.
+// Remove deletes the given key and corresponding value from the session data.
 // If the key is not present this operation is a no-op.
 func (s *Session) Remove(r *http.Request, key string) {
 	c := getCacheFromRequestContext(r)
@@ -133,7 +133,7 @@ func (s *Session) Remove(r *http.Request, key string) {
 	c.modified = true
 }
 
-// Exists returns true if the given key is present in the session cache.
+// Exists returns true if the given key is present in the session data.
 func (s *Session) Exists(r *http.Request, key string) bool {
 	c := getCacheFromRequestContext(r)
 
@@ -144,7 +144,7 @@ func (s *Session) Exists(r *http.Request, key string) bool {
 	return exists
 }
 
-// Keys returns a slice of all key names present in the session cache, sorted
+// Keys returns a slice of all key names present in the session data, sorted
 // alphabetically. If the cache contains no data then an empty slice will be
 // returned.
 func (s *Session) Keys(r *http.Request) []string {
@@ -179,7 +179,7 @@ func (s *Session) Destroy(r *http.Request) {
 	c.mu.Unlock()
 }
 
-// GetString returns the string value for a given key from the session cache.
+// GetString returns the string value for a given key from the session data.
 // The zero value for a string ("") is returned if the key does not exist or the
 // value could not be type asserted to a string.
 func (s *Session) GetString(r *http.Request, key string) string {
@@ -191,7 +191,7 @@ func (s *Session) GetString(r *http.Request, key string) string {
 	return str
 }
 
-// GetBool returns the bool value for a given key from the session cache. The
+// GetBool returns the bool value for a given key from the session data. The
 // zero value for a bool (false) is returned if the key does not exist or the
 // value could not be type asserted to a bool.
 func (s *Session) GetBool(r *http.Request, key string) bool {
@@ -203,7 +203,7 @@ func (s *Session) GetBool(r *http.Request, key string) bool {
 	return b
 }
 
-// GetInt returns the int value for a given key from the session cache. The
+// GetInt returns the int value for a given key from the session data. The
 // zero value for an int (0) is returned if the key does not exist or the
 // value could not be type asserted to an int.
 func (s *Session) GetInt(r *http.Request, key string) int {
@@ -215,7 +215,7 @@ func (s *Session) GetInt(r *http.Request, key string) int {
 	return i
 }
 
-// GetFloat returns the float64 value for a given key from the session cache. The
+// GetFloat returns the float64 value for a given key from the session data. The
 // zero value for an float64 (0) is returned if the key does not exist or the
 // value could not be type asserted to a float64.
 func (s *Session) GetFloat(r *http.Request, key string) float64 {
@@ -239,7 +239,7 @@ func (s *Session) GetBytes(r *http.Request, key string) []byte {
 	return b
 }
 
-// GetTime returns the time.Time value for a given key from the session cache. The
+// GetTime returns the time.Time value for a given key from the session data. The
 // zero value for a time.Time object is returned if the key does not exist or the
 // value could not be type asserted to a time.Time. This can be tested with the
 // time.IsZero() method.
@@ -253,7 +253,7 @@ func (s *Session) GetTime(r *http.Request, key string) time.Time {
 }
 
 // PopString returns the string value for a given key and then deletes it from the
-// session cache. The zero value for a string ("") is returned if the key does not
+// session data. The zero value for a string ("") is returned if the key does not
 // exist or the value could not be type asserted to a string.
 func (s *Session) PopString(r *http.Request, key string) string {
 	val := s.Pop(r, key)
@@ -265,7 +265,7 @@ func (s *Session) PopString(r *http.Request, key string) string {
 }
 
 // PopBool returns the bool value for a given key and then deletes it from the
-// session cache. The zero value for a bool (false) is returned if the key does not
+// session data. The zero value for a bool (false) is returned if the key does not
 // exist or the value could not be type asserted to a bool.
 func (s *Session) PopBool(r *http.Request, key string) bool {
 	val := s.Pop(r, key)
@@ -277,7 +277,7 @@ func (s *Session) PopBool(r *http.Request, key string) bool {
 }
 
 // PopInt returns the int value for a given key and then deletes it from the
-// session cache. The zero value for an int (0) is returned if the key does not
+// session data. The zero value for an int (0) is returned if the key does not
 // exist or the value could not be type asserted to an int.
 func (s *Session) PopInt(r *http.Request, key string) int {
 	val := s.Pop(r, key)
@@ -289,7 +289,7 @@ func (s *Session) PopInt(r *http.Request, key string) int {
 }
 
 // PopFloat returns the float64 value for a given key and then deletes it from the
-// session cache. The zero value for an float64 (0) is returned if the key does not
+// session data. The zero value for an float64 (0) is returned if the key does not
 // exist or the value could not be type asserted to a float64.
 func (s *Session) PopFloat(r *http.Request, key string) float64 {
 	val := s.Pop(r, key)
@@ -301,7 +301,7 @@ func (s *Session) PopFloat(r *http.Request, key string) float64 {
 }
 
 // PopBytes returns the byte slice ([]byte) value for a given key and then deletes
-// it from the from the session cache. The zero value for a slice (nil) is returned
+// it from the from the session data. The zero value for a slice (nil) is returned
 // if the key does not exist or could not be type asserted to []byte.
 func (s *Session) PopBytes(r *http.Request, key string) []byte {
 	val := s.Pop(r, key)
@@ -313,7 +313,7 @@ func (s *Session) PopBytes(r *http.Request, key string) []byte {
 }
 
 // PopTime returns the time.Time value for a given key and then deletes it from the
-// session cache. The zero value for a time.Time object is returned if the key does
+// session data. The zero value for a time.Time object is returned if the key does
 // not exist or the value could not be type asserted to a time.Time.
 func (s *Session) PopTime(r *http.Request, key string) time.Time {
 	val := s.Pop(r, key)

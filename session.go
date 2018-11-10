@@ -47,7 +47,7 @@ import (
 
 const cookieName = "session"
 
-var errCookieTooLong = errors.New("session: cookie length greater than 4096 bytes")
+var ErrCookieTooLong = errors.New("session: cookie length greater than 4096 bytes")
 
 // Session holds the configuration settings that you want to use for your sessions.
 type Session struct {
@@ -226,7 +226,7 @@ func (s *Session) save(w http.ResponseWriter, c *cache) error {
 	}
 
 	if len(cookie.String()) > 4096 {
-		return errCookieTooLong
+		return ErrCookieTooLong
 	}
 	w.Header().Add("Vary", "Cookie")
 	http.SetCookie(w, cookie)

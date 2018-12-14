@@ -161,6 +161,11 @@ func (s *Session) Enable(next http.Handler) http.Handler {
 }
 
 func (s *Session) load(r *http.Request) (*cache, error) {
+	c, ok := r.Context().Value(contextKeyCache).(*cache)
+	if ok {
+		return c, nil
+	}
+
 	cookie, err := r.Cookie(cookieName)
 	if err == http.ErrNoCookie {
 		return newCache(s.Lifetime), nil
@@ -168,7 +173,7 @@ func (s *Session) load(r *http.Request) (*cache, error) {
 		return nil, err
 	}
 
-	c := &cache{}
+	c = &cache{}
 	err = c.decode(cookie.Value, s.keys)
 	if err == errInvalidToken {
 		return newCache(s.Lifetime), nil

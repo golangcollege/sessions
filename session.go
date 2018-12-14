@@ -137,15 +137,20 @@ func New(key []byte, oldKeys ...[]byte) *Session {
 // has been modified.
 func (s *Session) Enable(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		c, err := s.load(r)
-		if err != nil {
-			s.ErrorHandler(w, r, err)
-			return
+		var err error
+
+		c, ok := r.Context().Value(contextKeyCache).(*cache)
+		if !ok {
+			c, err = s.load(r)
+			if err != nil {
+				s.ErrorHandler(w, r, err)
+				return
+			}
+			r = addCacheToRequestContext(r, c)
 		}
 
-		cr := addCacheToRequestContext(r, c)
 		bw := &bufferedResponseWriter{ResponseWriter: w}
-		next.ServeHTTP(bw, cr)
+		next.ServeHTTP(bw, r)
 
 		err = s.save(w, c)
 		if err != nil {
@@ -161,11 +166,6 @@ func (s *Session) Enable(next http.Handler) http.Handler {
 }
 
 func (s *Session) load(r *http.Request) (*cache, error) {
-	c, ok := r.Context().Value(contextKeyCache).(*cache)
-	if ok {
-		return c, nil
-	}
-
 	cookie, err := r.Cookie(cookieName)
 	if err == http.ErrNoCookie {
 		return newCache(s.Lifetime), nil
@@ -173,7 +173,7 @@ func (s *Session) load(r *http.Request) (*cache, error) {
 		return nil, err
 	}
 
-	c = &cache{}
+	c := &cache{}
 	err = c.decode(cookie.Value, s.keys)
 	if err == errInvalidToken {
 		return newCache(s.Lifetime), nil

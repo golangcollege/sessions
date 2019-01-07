@@ -215,13 +215,3 @@ func getHandler(w http.ResponseWriter, r *http.Request) {
     fmt.Fprintf(w, "Name: %s, Email: %s", user.Name, user.Email)
 }
 ```
-
-## TODO
-
-* [tests] Test cookie options
-* [tests] Improve tests for invalid cookies
-* [tests] Increase test coverage
-* [feature] Support multiple named sessions
-* [feature] Support Flusher interface
-* [feature] Support Hijacker interface
-* [feature] Add specific API for flash messages

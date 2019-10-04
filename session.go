@@ -253,6 +253,13 @@ func (bw *bufferedResponseWriter) WriteHeader(code int) {
 	bw.code = code
 }
 
+func (bw *bufferedResponseWriter) Push(target string, opts *http.PushOptions) error {
+	if pusher, ok := bw.ResponseWriter.(http.Pusher); ok {
+		return pusher.Push(target, opts)
+	}
+	return http.ErrNotSupported
+}
+
 func defaultErrorHandler(w http.ResponseWriter, r *http.Request, err error) {
 	log.Output(2, err.Error())
 	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)

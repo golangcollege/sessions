@@ -260,6 +260,15 @@ func (bw *bufferedResponseWriter) Push(target string, opts *http.PushOptions) er
 	return http.ErrNotSupported
 }
 
+func (bw *bufferedResponseWriter) Flush() {
+	f, ok := bw.ResponseWriter.(http.Flusher)
+	if ok == true {
+		bw.ResponseWriter.Write(bw.buf.Bytes())
+		f.Flush()
+		bw.buf.Reset()
+	}
+}
+
 func defaultErrorHandler(w http.ResponseWriter, r *http.Request, err error) {
 	log.Output(2, err.Error())
 	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)

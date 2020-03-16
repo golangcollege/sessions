@@ -38,9 +38,11 @@
 package sessions
 
 import (
+	"bufio"
 	"bytes"
 	"errors"
 	"log"
+	"net"
 	"net/http"
 	"time"
 )
@@ -258,6 +260,11 @@ func (bw *bufferedResponseWriter) Push(target string, opts *http.PushOptions) er
 		return pusher.Push(target, opts)
 	}
 	return http.ErrNotSupported
+}
+
+func (bw *bufferedResponseWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	hj := bw.ResponseWriter.(http.Hijacker)
+	return hj.Hijack()
 }
 
 func (bw *bufferedResponseWriter) Flush() {

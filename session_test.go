@@ -70,8 +70,8 @@ func TestDestroy(t *testing.T) {
 
 	_, cookie := testRequest(t, s.Enable(h), "")
 
-	if !strings.HasPrefix(cookie, fmt.Sprintf("%s=;", cookieName)) {
-		t.Errorf("got %q: expected prefix %q", cookie, fmt.Sprintf("%s=;", cookieName))
+	if !strings.HasPrefix(cookie, fmt.Sprintf("%s=;", s.CookieName)) {
+		t.Errorf("got %q: expected prefix %q", cookie, fmt.Sprintf("%s=;", s.CookieName))
 	}
 	if !strings.Contains(cookie, "Expires=Thu, 01 Jan 1970 00:00:01 GMT") {
 		t.Errorf("got %q: expected to contain %q", cookie, "Expires=Thu, 01 Jan 1970 00:00:01 GMT")
@@ -121,7 +121,7 @@ func TestInvalidCookies(t *testing.T) {
 	s := New([]byte("u46IpCV9y5Vlur8YvODJEhgOY8m9JVE4"))
 
 	cookie := &http.Cookie{
-		Name:  cookieName,
+		Name:  s.CookieName,
 		Value: "",
 	}
 
@@ -135,7 +135,7 @@ func TestInvalidCookies(t *testing.T) {
 	}
 
 	cookie = &http.Cookie{
-		Name:  cookieName,
+		Name:  s.CookieName,
 		Value: "`",
 	}
 

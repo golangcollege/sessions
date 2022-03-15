@@ -47,12 +47,15 @@ import (
 	"time"
 )
 
-const cookieName = "session"
+const defaultCookieName = "session"
 
-var ErrCookieTooLong = errors.New("session: cookie length greater than 4096 bytes")
+var ErrCookieTooLong = errors.New("cookie length greater than 4096 bytes")
 
 // Session holds the configuration settings that you want to use for your sessions.
 type Session struct {
+	// Name of the cookie key
+	CookieName string
+
 	// Domain sets the 'Domain' attribute on the session cookie. By default
 	// it will be set to the domain name that the cookie was issued from.
 	Domain string
@@ -98,26 +101,40 @@ type Session struct {
 	keys         [][32]byte
 }
 
+type Params struct {
+	// Required.
+	// The Key parameter is the secret you want to use to authenticate and encrypt
+	// session cookies. It should be exactly 32 bytes long.
+	Key []byte
+	// Optional. The OldKeys parameter can be used to provide an arbitrary
+	// number of old Keys. This can be used to ensure that valid cookies continue
+	// to work correctly after key rotation.
+	OldKeys [][]byte
+	// Optional. Default is `session`.
+	// An alternative cookie name can be used for resolving collisions with
+	// the other packages which use the cookie of the same name, or for overcoming
+	// the 4096 bytes value limit by creating several cookie storages.
+	CookieName string
+}
+
 // New initializes a new Session object to hold the configuration settings for
 // your sessions.
-//
-// The key parameter is the secret you want to use to authenticate and encrypt
-// session cookies. It should be exactly 32 bytes long.
-//
-// Optionally, the variadic oldKeys parameter can be used to provide an arbitrary
-// number of old Keys. This can be used to ensure that valid cookies continue
-// to work correctly after key rotation.
-func New(key []byte, oldKeys ...[]byte) *Session {
-	keys := make([][32]byte, 1)
-	copy(keys[0][:], key)
+func NewWithParams(params Params) *Session {
+	if len(params.Key) == 0 {
+		panic(`parameter Key must be provided`)
+	}
 
-	for _, key := range oldKeys {
+	keys := make([][32]byte, 1)
+	copy(keys[0][:], params.Key)
+
+	for _, key := range params.OldKeys {
 		var newKey [32]byte
 		copy(newKey[:], key)
 		keys = append(keys, newKey)
 	}
 
 	return &Session{
+		CookieName:   params.CookieName,
 		Domain:       "",
 		HttpOnly:     true,
 		Lifetime:     24 * time.Hour,
@@ -128,6 +145,18 @@ func New(key []byte, oldKeys ...[]byte) *Session {
 		ErrorHandler: defaultErrorHandler,
 		keys:         keys,
 	}
+}
+
+// Simplified Session initilizer.
+// The same as NewWithParams(), with default 'session' cookie name.
+func New(key []byte, oldKeys ...[]byte) *Session {
+	params := Params{
+		Key:        key,
+		OldKeys:    oldKeys,
+		CookieName: defaultCookieName,
+	}
+
+	return NewWithParams(params)
 }
 
 // Enable is middleware which loads and saves session data to and from the
@@ -168,7 +197,7 @@ func (s *Session) Enable(next http.Handler) http.Handler {
 }
 
 func (s *Session) load(r *http.Request) (*cache, error) {
-	cookie, err := r.Cookie(cookieName)
+	cookie, err := r.Cookie(s.CookieName)
 	if err == http.ErrNoCookie {
 		return newCache(s.Lifetime), nil
 	} else if err != nil {
@@ -200,7 +229,7 @@ func (s *Session) save(w http.ResponseWriter, c *cache) error {
 
 	if c.destroyed {
 		http.SetCookie(w, &http.Cookie{
-			Name:     cookieName,
+			Name:     s.CookieName,
 			Value:    "",
 			Path:     s.Path,
 			Domain:   s.Domain,
@@ -219,7 +248,7 @@ func (s *Session) save(w http.ResponseWriter, c *cache) error {
 	}
 
 	cookie := &http.Cookie{
-		Name:     cookieName,
+		Name:     s.CookieName,
 		Value:    token,
 		Path:     s.Path,
 		Domain:   s.Domain,
